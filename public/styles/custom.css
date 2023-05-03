@@ -1,0 +1,127 @@
+.clickbtn .roundimg{
+    border: 1px solid #ced4da;
+    border-radius: 50px;
+}
+.userdetail{
+    justify-content: space-between;
+    display: flex;
+}
+.timeformat{
+    font-size: 10px;
+}
+.chatHeader .userchatheader{
+    width: 100%;
+}
+#defaulchat{
+    text-align:center;
+    padding:100px;
+}
+.defaultmessage{
+    color:#a9a9a9a1;
+}
+.chatcontainer{
+    display: grid;
+    justify-content: center;
+}
+.profilePhoto{
+    align-self: center;
+}
+.messagediv .messagelist{
+    text-align: left;
+}
+.profilePicli{
+    padding:10px;
+    display: flex;
+    border-bottom: 1px solid #ced4da;
+}
+.profilepic{
+    width: 70px;
+    height: 70px;
+    border: 0.5px solid #ced4da;
+    border-radius: 100%;
+}
+.chatBodyContainer .containerflex{
+    display: flex;
+}
+.chatBodyContainer .wc20{
+    width: 20%;
+    color:#44aeff;
+}
+.btncontainer{
+    display: flex;
+}
+.btncontainer .container{
+    display: contents;
+}
+.detaildate{
+    color: #808080d6;
+    width: 100%;
+    text-align: right;
+}
+.btncontainer .chatbutton{
+    display: inline; width: 10%;
+}
+.btncontainer .likeicon{
+    font-size: 25px;
+    color:#42a742d4;
+    padding-right:5%;
+}
+.btncontainer .dilikeicon{
+    font-size: 25px;
+    padding-right:5%;
+    color:#ff000094;
+}
+.formbtn{
+    width: 100%;
+    text-align: center;
+}
+.alert-publish .uploadicon{
+    font-size: 22px;
+    color:#5e9eed;
+    padding-right:5%;
+}
+
+
+.chatlist li{
+    background-color: white;
+    cursor: pointer;
+}
+.newmessage{
+    background-color:#9d9d9d38 !important;
+    cursor: pointer;
+}
+
+.unsethover .notification-list .chatlist li:hover a{
+    background: unset;
+}
+
+.msgcount{
+    background-color: green;
+    color: white;
+    float: right;
+    width: 20px;
+    border: 0px;
+    border-radius: 12px;
+    text-align: center;
+}
+.userimg{
+    width: unset;
+    flex: unset;
+}
+
+.page_header{
+    background-color: #fff;
+    border-radius: 10px;
+    -webkit-box-shadow: 0 0 28px rgb(0 0 0 / 8%);
+    box-shadow: 0 0 28px rgb(0 0 0 / 8%);
+    margin-bottom: 5px;
+    padding: 15px;
+}
+.margin{
+    margin-top: unset;
+    margin-bottom: unset;
+}
+
+.padding{
+    padding: unset;
+}

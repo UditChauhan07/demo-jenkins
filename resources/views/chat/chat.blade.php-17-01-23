@@ -1,0 +1,381 @@
+@include('includes.header')
+@include('includes.navbar')
+@include('includes.right_sidebar')
+@include('includes.left_sidebar')
+<div class="main-container">
+    <div class="pd-ltr-20 xs-pd-20-10 padding">
+        <div class="min-height-200px">
+            <div class="page_header ">
+                <div class="row">
+                    <div class="col-md-6 col-sm-12">
+                        <div class="title">
+                            <h4>User Messages</h4>
+                        </div>
+                    </div>
+                    <div class="col-md-6 col-sm-12 text-right">
+                        <form>
+                            <div class="dropdown" style="width: 40%; float:right;">
+                                <input class="form-control date-picker" on id="messagefilter" name="filterdate" placeholder="Select Date" type="text">
+                            </div>
+                        </form>
+					</div>
+                </div>
+            </div>
+            <div class="bg-white border-radius-4 box-shadow mb-30">
+                <div class="row no-gutters userDetails">
+                    <div class="col-lg-4 col-md-5 col-sm-12">
+                        <div class="chat-list bg-light-gray unsethover">
+                            <div class="chat-search">
+                                <span class="ti-search"></span>
+                                <input type="text" id="searchinput" name="searchinput" placeholder="Search Contact">
+                            </div>
+                            <div class="notification-list chat-notification-list customscroll ">
+                                <div class="msguserlist">
+                                    <ul class="chatlist">
+                                        @foreach($message_lists as $message_list)
+                                        <?php
+                                        $messageid = $message_list->id;
+                                        ?>
+                                        <li class="chatBoxContant{{$message_list->user->id}}">
+                                            <a onclick="return getMessage('{{$message_list->user->id}}');" class="clickbtn" data-name="{{$message_list->user->id}}">
+                                                @if($message_list->user->profile_pic != null)
+                                                <img src="{{url('/profile_pic/'.$message_list->user->profile_pic)}}" class="roundimg" alt="">
+                                                @else
+                                                <img src="{{asset('images/dummy.jpg')}}" class="roundimg" alt="">
+                                                @endif
+                                                <div class="userdetail">
+                                                    <h3 class="clearfix">{{ucwords($message_list->user->name)}}</h3>
+                                                    <span class="timeformat">{{$message_list->created_at->format('M d, Y')}}</span>
+                                                </div>
+                                                @foreach($unseen_msgCountList as $unseen_msgCount)
+                                                <?php
+                                                $dobFormate = date('M d, Y', strtotime($message_list->user->dob));
+                                                if ($message_list->user->id == $unseen_msgCount['userid']) {
+                                                    $unseenMsgCount = $unseen_msgCount['count'];
+                                                }
+                                                ?>
+                                                @endforeach
+                                                @if($unseenMsgCount != 0)
+                                                <p class="timeformat" id="messageId{{$message_list->user->id}}">DOB: {{$dobFormate}} | DOJ: {{$message_list->user->created_at->format('M d, Y')}}
+                                                    <span class='msgcount latestmsgcount{{$message_list->user->id}}'>{{$unseenMsgCount}}</span></p>
+                                                <!-- <p class="timeformat" id="latestmsg{{$message_list->user->id}}"></p> -->
+                                                @else
+                                                <p class="timeformat" id="messageId{{$message_list->user->id}}">DOB: {{$dobFormate}} | DOJ: {{$message_list->user->created_at->format('M d, Y')}}</p>
+                                                <!-- <p class="timeformat" id="latestmsg{{$message_list->user->id}}"></p> -->
+                                                @endif
+                                            </a>
+                                        </li>
+                                        <hr class="margin">
+                                        @endforeach
+                                    </ul>
+                                </div>
+                                <div class="searchlist">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <hr />
+                    <div class="col-lg-8 col-md-7 col-sm-12">
+                        <div class="chat-detail">
+                            <div class="chat-profile-header clearfix chatHeader">
+                                <div class="left userchatheader" id="userheader">
+                                    <div id="defaulchat">
+                                        <h5 class="defaultmessage">No Message Found</h5>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="chat-box downscroll">
+                                <div class="chat-desc scroll customscroll">
+                                    <div class="userchatbody">
+
+                                    </div>
+                                </div>
+                                @can('chat-create')
+                                <div class="chat-footer">
+                                    <form>
+                                        @csrf
+                                        <div class="userchatfooter">
+
+                                        </div>
+                                    </form>
+                                </div>
+                                @endcan
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.3/jquery.min.js"></script>
+<script>
+
+    function getMessage(id) {
+        $('.defaulchat').hide();
+        var id = id;
+        $('.latestmsgcount'+id).hide();
+        $('.chatlist li').removeClass('newmessage');
+        $('.chatBoxContant' + id).addClass('newmessage');
+        // $('.chatlist .chatBoxContant' + id).addClass('newmessage');
+        $.ajax({
+            type: 'POST',
+            url: "{{route('chat.chat')}}",
+            data: {
+                "_token": "{{ csrf_token() }}",
+                "id": id
+            },
+            success: function(data) {
+                var html = '';
+                html += '<div class="clearfix chatcontainer">';
+                html += '<div class="chat-profile-photo profilePhoto">';
+                if (data.user.profile_pic != null) {
+                    var pic = data.user.profile_pic;
+                    html += '<img src="{{url('/profile_pic/')}}/' + pic + '" alt="" class="borderimg">';
+                } else {
+                    html += '<img src="{{asset('/images/dummy.jpg')}}" alt="" class="borderimg">';
+                }
+                var username = data.user.name.split(' ');
+                for (let i = 0; i < username.length; i++) {
+                    username[i] = username[i][0].toUpperCase() + username[i].substr(1);
+                }
+                var dobsplit = new Date(data.user.dob);
+                var joiningdate = new Date(data.user.created_at);
+                var joiningday = joiningdate.getDate();
+                var joiningmonth = joiningdate.getMonth();
+                var joiningyear = joiningdate.getFullYear();
+                var monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+                html += '</div><div class="chat-profile-name">';
+                html += '<h3>' + username.join(" ") + '</h3>';
+                html += '<span> DOB: ' + monthNames[dobsplit.getMonth()]+ ' ' + dobsplit.getDate() + ', ' + dobsplit.getFullYear() + '</span>';
+                html += '<span> Email: ' + data.user.email + '</span>';
+                html += '<span> Joining Date: ' + monthNames[joiningmonth]+ ' ' + joiningday +', ' + joiningyear + '</span></div></div>';
+
+                var html1 = "";
+                html1 += '<ul class="autoscroller chatBody" >';
+                $.each(data.message_lists, function(k, v) {
+                    var id1 = "{{Auth::user()->id}}"
+                    if (v.sender_id == id1) {
+                        html1 += '<li class="clearfix admin_chat borderBottom"><span class="chat-img">';
+                        if (v.user.profile_pic != null) {
+                            var adminpic1 = v.user.profile_pic;
+                            html1 += '<img src="{{url('/profile_pic/')}}/' + adminpic1 + '" alt="" class="borderimg"> </span>';
+                        } else {
+                            html1 += '<img src="{{asset('/images/dummy.jpg')}}" alt="" class="borderimg"> </span>';
+                        }
+                        html1 += '<div class="chat-body clearfix messagediv">';
+                        var message1 = v.message;
+                        var messagetime = new Date(v.created_at);
+                        var splitmsgdate = messagetime.toDateString().split(" ");
+                        var msgdate = splitmsgdate[1] + ' ' + splitmsgdate[2] + ',' + splitmsgdate[3];
+                        var splitmsgtime = messagetime.toLocaleTimeString().split(':');
+                        var msgtime = splitmsgtime[0] + ':' + splitmsgtime[1] + splitmsgtime[2].slice(2);
+                        html1 += '<p class="messagelist" style="text-align: left;">' + message1.replace(/<\/?[^>]+(>|$)/g, "") + '</p>';
+                        html1 += '<div class="chat_time">' + msgdate+ ' ' + msgtime + '</div>';
+                        html1 += '</div></li>';
+                    } else {
+                        var message2 = v.message;
+                        var messagetime = new Date(v.created_at);
+                        var splitmsgdate = messagetime.toDateString().split(" ");
+                        var msgdate = splitmsgdate[1] + ' ' + splitmsgdate[2] + ',' + splitmsgdate[3];
+                        var splitmsgtime = messagetime.toLocaleTimeString().split(':');
+                        var msgtime = splitmsgtime[0] + ':' + splitmsgtime[1] + splitmsgtime[2].slice(2);
+                        html1 += '<li class="clearfix"><span class="chat-img" style="align-self:left;">';
+                        if (v.user.profile_pic != null) {
+                            var adminpic2 = v.user.profile_pic;
+                            html1 += '<img src="{{url('/profile_pic/')}}/' + adminpic2 + '" alt="" class="borderimg"> </span>';
+                        } else {
+                            html1 += '<img src="{{url('/images/dummy.jpg')}}" alt="" class="borderimg">';
+                        }
+                        html1 += '</span><div class="chat-body clearfix messagediv">';
+                        if(id1 != 6){
+                            html1 += '<div class="chat_time">'+v.user.name+'</div>'
+                        }
+                        html1 += '<p style="text-align: left;">' + message2.replace(/<\/?[^>]+(>|$)/g, "") + '</p>';
+                        html1 += '<div class="chat_time">' + msgdate+ ' ' + msgtime + '</div></div></li>'
+                    }
+                });
+                html1 += '<div id="chatinput"></div></ul>';
+
+                var html2 = '';
+                html2 += '<div class="file-upload" ><a href="#"><i class="icon-copy dw dw-message iconsize"></i></a></div>';
+                html2 += '<input type="hidden" id="userid" name="userid" value="' + data.user.id + '">';
+                html2 += '<div class="chat_text_area">';
+                html2 += '<textarea placeholder="Type your message…" id="questionanswer" name="questionanswer"></textarea></div>';
+                html2 += '<div class="chat_send">';
+                html2 += '<a class="btn btn-link" onclick="return getAnswer();" ><i class="icon-copy ion-paper-airplane"></i></a></div>';
+
+                // $("#messageId"+id).hide();
+                // $("#latestmsg"+id).empty();
+                // $("#latestmsg"+id).append(data.latestmessage.message);
+                $(".userchatheader").html(html);
+                $(".userchatbody").html(html1);
+                $(".userchatfooter").html(html2);
+                scrolldown();
+            }
+        });
+    }
+</script>
+<script>
+    function scrolldown() {
+        // $("div, .chat-desc").animate({scrollTop: document.body.scrollHeight}, "slow");
+    }
+</script>
+<script>
+    function getAnswer() {
+        var userid = $('#userid').val();
+        var questionanswer = $('#questionanswer').val();
+        $.ajax({
+            type: 'POST',
+            url: "{{url('askquestion')}}",
+            data: {
+                "_token": "{{ csrf_token() }}",
+                "userid": userid,
+                "questionanswer": questionanswer
+            },
+            success: function(data) {
+                console.log(data);
+                var userId = data.userId;
+                if (data.status == 'success') {
+                    getMessage(userId);
+                    $('#questionanswer').val('');
+                }
+
+            }
+        });
+    }
+</script>
+<script>
+    $("#searchinput").keyup(function(){
+        let input = $('#searchinput').val();
+        if(true)
+        {
+            $.ajax({
+                type: 'POST',
+                url: "{{url('searchuser')}}",
+                data: {
+                    "_token": "{{ csrf_token() }}",
+                    "input": input,
+                },
+                success: function(data) 
+                {
+                    var msglist = data.message_list;
+                    var unseenmsgcount = data.unseen_msgCountList;
+                    var userlist = '';
+                    userlist += '<ul class="chatlist">';
+                    if(msglist.length != 0){
+                        $.each(msglist, function(k, v) {
+                        userlist += '<li class="chatBoxContant{{$message_list->user->id}}">';
+                        userlist += '<a onclick="return getMessage('+v.user.id+');" class="clickbtn" data-name="{{$message_list->user->id}}">';
+                        if(v.user.profile_pic != null){
+                            userlist += '<img src="{{url('/profile_pic/')}}'+v.user.profile_pic+'" class="roundimg" alt="">';
+                        }else{
+                            userlist += '<img src="{{url('/images/dummy.jpg')}}" class="roundimg" alt="">';
+                        }
+                        var userdob = new Date(v.user.dob);
+                        var splitdob = userdob.toDateString().split(" ");
+                        var userdobdate = splitdob[1] + ' ' + splitdob[2] + ',' + splitdob[3];
+                        var userjoindate = new Date(v.user.created_at);
+                        var splituserjoindate = userjoindate.toDateString().split(" ");
+                        var userjoining = splituserjoindate[1] + ' ' + splituserjoindate[2] + ',' + splituserjoindate[3];
+                        var messagetime = new Date(v.created_at);
+                        var splitmsgdate = messagetime.toDateString().split(" ");
+                        var msgdate = splitmsgdate[1] + ' ' + splitmsgdate[2] + ',' + splitmsgdate[3];
+                        userlist += '<div class="userdetail">';
+                        userlist += '<h3 class="clearfix">'+v.user.name+'</h3>';
+                        userlist += '<span class="timeformat">'+msgdate+'</span></div>';
+                        userlist += '<p class="timeformat">DOB: '+userdobdate+' | DOJ: '+userjoining+'<span class="msgcount latestmsgcount'+v.user.id+'">';
+                        $.each(unseenmsgcount, function(k1, v1) {
+                        if (v.user.id == v1['userid']) {
+                            var msgCount = v1['count'];
+                        }
+                        if(msgCount != null){
+                            if(msgCount == 0){
+                            userlist += '';
+                            }else{
+                                userlist +=  msgCount;
+                            }
+                        }else{
+                        userlist += '';
+                        }
+                        });
+                        userlist += '</span></p></a></li><hr class="margin">';
+                        });
+                    }else{
+                        userlist += '<li class="chatBoxContant">';
+                        userlist += '<div class="userdetail">';
+                        userlist += '<h3 class="clearfix">No Data Found</h3></div></li>';
+
+                    }
+                    userlist += '</ul>';
+                    $(".msguserlist").html(userlist);
+                
+                }
+            });
+        }
+    });
+</script>
+<script>
+    $(".date-picker").on('blur',function(){
+        let inputfilter = $('#messagefilter').val();
+        console.log(inputfilter);
+            $.ajax({
+                type: 'POST',
+                url: "{{url('filteruser')}}",
+                data: {
+                    "_token": "{{ csrf_token() }}",
+                    "inputfilter": inputfilter,
+                },
+                success: function(data) 
+                {
+                    console.log(data);
+                    var msglist = data.message_list;
+                    var unseenmsgcount = data.unseen_msgCountList;
+                    var userlist = '';
+                    userlist += '<ul class="chatlist">';
+                        $.each(msglist, function(k, v) {
+                        userlist += '<li class="chatBoxContant{{$message_list->user->id}}">';
+                        userlist += '<a onclick="return getMessage('+v.user.id+');" class="clickbtn" data-name="{{$message_list->user->id}}">';
+                        if(v.user.profile_pic != null){
+                            userlist += '<img src="{{url('/profile_pic/')}}'+v.user.profile_pic+'" class="roundimg" alt="">';
+                        }else{
+                            userlist += '<img src="{{url('/images/dummy.jpg')}}" class="roundimg" alt="">';
+                        }
+                        var userdob = new Date(v.user.dob);
+                        var splitdob = userdob.toDateString().split(" ");
+                        var userdobdate = splitdob[1] + ' ' + splitdob[2] + ',' + splitdob[3];
+                        var userjoindate = new Date(v.user.created_at);
+                        var splituserjoindate = userjoindate.toDateString().split(" ");
+                        var userjoining = splituserjoindate[1] + ' ' + splituserjoindate[2] + ',' + splituserjoindate[3];
+                        var messagetime = new Date(v.created_at);
+                        var splitmsgdate = messagetime.toDateString().split(" ");
+                        var msgdate = splitmsgdate[1] + ' ' + splitmsgdate[2] + ',' + splitmsgdate[3];
+                        userlist += '<div class="userdetail">';
+                        userlist += '<h3 class="clearfix">'+v.user.name+'</h3>';
+                        userlist += '<span class="timeformat">'+msgdate+'</span></div>';
+                        userlist += '<p class="timeformat">DOB: '+userdobdate+' | DOJ: '+userjoining+'<span class="msgcount latestmsgcount'+v.user.id+'">';
+                        $.each(unseenmsgcount, function(k1, v1) {
+                        if (v.user.id == v1['userid']) {
+                            var msgCount = v1['count'];
+                        }
+                        if(msgCount != null){
+                            if(msgCount == 0){
+                            userlist += '';
+                            }else{
+                                userlist +=  msgCount;
+                            }
+                        }else{
+                        userlist += '';
+                        }
+                        });
+                        userlist += '</span></p></a></li><hr class="margin">';
+                        });
+                        userlist += '</ul>';
+                    $(".msguserlist").html(userlist);
+                }
+            });
+    });
+</script>
+
+
+@include('includes.footer')
