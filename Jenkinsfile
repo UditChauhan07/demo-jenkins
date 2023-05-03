@@ -7,7 +7,7 @@ pipeline {
                 git 'https://github.com/UditChauhan07/demo-jenkins.git'
                 sh 'composer install'
                 sh 'cp .env'
-                sh 'php artisan key:generate'
+                sh 'php artisan serve'
             }
         }
         stage('Test') {
