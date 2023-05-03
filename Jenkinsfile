@@ -6,7 +6,7 @@ pipeline {
             steps {
                 git 'https://github.com/UditChauhan07/demo-jenkins.git'
                 sh 'composer install'
-                sh 'cp .env.example .env'
+                sh 'cp .env'
                 sh 'php artisan key:generate'
             }
         }
